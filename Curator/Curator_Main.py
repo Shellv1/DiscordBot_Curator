@@ -42,6 +42,7 @@ async def on_message(message):
         match cmd[0]:
             case 'create': await CreateChannels(cmd, guild)
             case 'remove': await RemoveChannels(cmd, guild)
+            case 'pop': await Pop(guild.categories[:1])
             case _: return
 
     else: await UploadWIP(message, guild, message.content.splitlines()[1])

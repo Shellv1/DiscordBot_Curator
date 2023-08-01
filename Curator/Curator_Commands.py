@@ -1,6 +1,13 @@
 # IMPORTS
 import discord
 
+# FUNCTION:     Pop(1)
+#   1:          [obj]       Categories
+async def Pop(categories):
+    for category in categories:
+        for channel in category:
+            await channel.history(limit=1).delete()
+
 # FUNCTION:     CreateChannels(1, 2)
 #   1:          [str list]  Command
 #   2:          [obj]       Guild
