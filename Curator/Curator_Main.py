@@ -1,10 +1,6 @@
 # Discord Bot: Curator
 # Ver 2.00.00
 
-# TODO
-# Create channels on command
-#   Create private exhibit channel for artists
-
 # Installations
     # pip install -U discord.py
     # pip install -U python-dotenv
@@ -42,8 +38,10 @@ async def on_message(message):
         match cmd[0]:
             case 'create': await CreateChannels(cmd, guild)
             case 'remove': await RemoveChannels(cmd, guild)
-            case 'pop': await Pop(guild.categories[:1])
+            case 'pop': await Pop(guild.categories[0].channels[:1] + guild.categories[1].channels)
             case _: return
+
+        await message.delete()
 
     else: await UploadWIP(message, guild, message.content.splitlines()[1])
         

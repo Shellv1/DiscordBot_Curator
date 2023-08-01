@@ -2,11 +2,13 @@
 import discord
 
 # FUNCTION:     Pop(1)
-#   1:          [obj]       Categories
-async def Pop(categories):
-    for category in categories:
-        for channel in category:
-            await channel.history(limit=1).delete()
+#   1:          [obj]       Channels
+async def Pop(channels):
+    msg = []
+
+    for channel in channels:
+        msg = [message async for message in channel.history(limit=1)]
+        await msg[0].delete()
 
 # FUNCTION:     CreateChannels(1, 2)
 #   1:          [str list]  Command
