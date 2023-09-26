@@ -1,8 +1,19 @@
 # IMPORTS
 import discord
 
+# FUNCTION:     CuratorHelp(1)
+    # 1:        [obj]       Channel
+# DESCRIPTION:
+    # Display list of commands
+async def CuratorHelp(channel):
+    helpMsg = """```List of Commands:``````BAN USER\n  ban [user]``````CHANNEL - CREATE\n  create [user] [-a/-v/-av]``````CHANNEL - REMOVE\n  remove [user] [-a/-v/-av]``````DELETE EMPTY CHANNELS\n  remove``````DELETE MOST RECENT WIP\n  pop```"""
+
+    await channel.send(content=helpMsg)
+
 # FUNCTION:     Pop(1)
-#   1:          [obj]       Channels
+    # 1:        [obj]       Channels
+# DESCRIPTION:
+    # Delete most recently uploaded project
 async def Pop(channels):
     msg = []
 
@@ -11,16 +22,23 @@ async def Pop(channels):
         await msg[0].delete()
 
 # FUNCTION:     CreateChannels(1, 2)
-#   1:          [str list]  Command
-#   2:          [obj]       Guild
+    # 1:        [str list]  Command
+    # 2:        [obj]       Guild
+# DESCRIPTION:
+    # Determine which channels to create
 async def CreateChannels(cmd, guild):
-    for i in range(2, len(cmd)):
-        if (cmd[i] == '-v'): await CreateViewerChannel(cmd[1], guild)
-        elif (cmd[i] == '-a'): await CreateArtistChannel(cmd[1], guild)
+    match cmd[2]:
+        case '-a': await CreateArtistChannel(cmd[1], guild)
+        case '-v': await CreateViewerChannel(cmd[1], guild)
+        case '-av':
+            await CreateArtistChannel(cmd[1], guild)
+            await CreateViewerChannel(cmd[1], guild)
 
 # FUNCTION:     CreateViewerChannel(1, 2)
-#   1:          [obj]       User
-#   2:          [obj]       Guild
+    # 1:        [obj]       User
+    # 2:        [obj]       Guild
+# DESCRIPTION:
+    # Create a private viewer channel
 async def CreateViewerChannel(user, guild):
     viewerChannelName = str('wips-' + CharToNum(user[0]) + IntToStr(len(guild.categories[1].channels) + 1))
 
@@ -42,18 +60,20 @@ async def CreateViewerChannel(user, guild):
             break
 
 # FUNCTION:     CharToNum(1)
-#   1:          [char]      ASCII Character
+    # 1:        [char]      ASCII Character
 def CharToNum(x):
     y = ord(x.lower()) - 96
     return '0' + str(y) if (y < 10) else str(y)
 
 # FUNCTION:     IntToStr(1)
-#   1:          [int]       Integer Value
+    # 1:        [int]       Integer Value
 def IntToStr(i): return '0' + str(i) if (i < 10) else str(i)
 
 # FUNCTION:     CreateArtistChannel(1, 2)
-#   1:          [obj]       User
-#   2:          [obj]       Guild
+    # 1:        [obj]       User
+    # 2:        [obj]       Guild
+# DESCRIPTION:
+    # Create private channel in which users can upload artwork
 async def CreateArtistChannel(user, guild):
     artistChannelName = str(user[:-5] + '-exhibit')
 
@@ -79,25 +99,32 @@ async def CreateArtistChannel(user, guild):
             break
 
 # FUNCTION:     RemoveChannels(1, 2)
-#   1:          [str list]  Command
-#   2:          [obj]       Guild
+    # 1:        [str list]  Command
+    # 2:        [obj]       Guild
 async def RemoveChannels(cmd, guild):
-    for i in range(2, len(cmd)):
-        if (cmd[i] == '-v'): await RemoveUserChannel(cmd[1], guild.categories[1].channels)
-        elif (cmd[i] == '-a'): await RemoveUserChannel(cmd[1], guild.categories[2].channels)
+    if (len(cmd) == 1):
+        await RemoveUserChannel(0, guild.categories[1].channels + guild.categories[2].channels)
+    elif (len(cmd) == 3):
+        match cmd[2]:
+            case '-a': await RemoveUserChannel(cmd[1], guild.categories[2].channels)
+            case '-v': await RemoveUserChannel(cmd[1], guild.categories[1].channels)
+            case '-av':
+                await RemoveUserChannel(cmd[1], guild.categories[1].channels + guild.categories[2].channels)
 
 # FUNCTION:     CreateViewerChannel(1, 2)
-#   1:          [obj]       User
-#   2:          [obj]       Guild
-async def RemoveUserChannel(user, category):
-    for channel in category:
-        if (len(channel.members) < 4):
-            await channel.delete()
-            continue
-        for member in channel.members:
-            if (
-                (user[-5] == '#' and member.name == user[:-5] and member.discriminator == user[-4:]) or
-                (member.name == user)
-            ):
+    # 1:        [obj]       User
+    # 2:        [obj]       Guild
+async def RemoveUserChannel(user, channels):
+
+    for channel in channels:
+        if (user):
+            for member in channel.members:
+                if (
+                    (user[-5] == '#' and member.name == user[:-5] and member.discriminator == user[-4:]) or
+                    (member.name == user)
+                ):
+                    await channel.delete()
+        else:
+            # TODO: if there are no members without 'Shell' role
+            if (len(channel.members) < 4):
                 await channel.delete()
-                
